@@ -1,17 +1,21 @@
 import type { Types } from "mongoose";
 
 export interface IUser {
+    _id: Types.ObjectId;
     name: string;
     email: string;
     password: string;
     createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface IGroup {
+    _id: Types.ObjectId;
     name: string;
     members: Types.ObjectId[];
     createdBy: Types.ObjectId;
     createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface ISplit {
@@ -20,6 +24,7 @@ export interface ISplit {
 }
 
 export interface IExpense {
+    _id: Types.ObjectId;
     description: string;
     amount: number;
     paidBy: Types.ObjectId;
@@ -27,12 +32,15 @@ export interface IExpense {
     splitType: "equal" | "unequal" | "percentage";
     splits: ISplit[];
     createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface ISettlement {
+    _id: Types.ObjectId;
     group: Types.ObjectId;
     from: Types.ObjectId;
     to: Types.ObjectId;
     amount: number;
     createdAt: Date;
+    updatedAt: Date;
 }

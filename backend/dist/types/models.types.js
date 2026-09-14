@@ -1,18 +1,3 @@
-import { Types } from "mongoose";
-Interface;
-IUser;
-{
-    name: string;
-    email: string;
-    password: string;
-    createdAt: Date;
-}
-Interface;
-IGroup;
-{
-    name: string;
-    members: Types.ObjectId[];
-    createdBy: Types.ObjectId;
-    createdAt: Date;
-}
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 //# sourceMappingURL=models.types.js.map
