@@ -39,4 +39,11 @@ export interface ISettlement {
     createdAt: Date;
     updatedAt: Date;
 }
+export interface IFriend {
+    _id: Types.ObjectId;
+    requester: Types.ObjectId;
+    recipient: Types.ObjectId;
+    createdAt: Date;
+    updatedAt: Date;
+}
 //# sourceMappingURL=models.types.d.ts.map
