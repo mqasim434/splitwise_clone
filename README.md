@@ -202,7 +202,3 @@ A Postman collection is saved in `/backend/postman`.
 3. React web app
 4. Flutter mobile app
 5. Deploy backend (Render or Railway or AWS) and web (Vercel)
-
-## Author
-
-Built by Qasim as part of a 15 day build in public challenge. Follow along on LinkedIn: [your-profile-link]
