@@ -4,7 +4,7 @@ A full-stack expense sharing app built in public over 15 days. One backend, two 
 
 Track shared expenses with friends and groups, split bills three different ways, see who owes whom, and settle up.
 
-> Status: backend in progress (Day 5 of 15). Web and mobile clients are planned. See the [progress log](#progress-log).
+> Status: backend complete and deployed. Live API: https://splitwise-clone.duckdns.org/api/health. Web and mobile clients are next. See the [progress log](#progress-log).
 
 ## Features
 
@@ -15,11 +15,11 @@ Track shared expenses with friends and groups, split bills three different ways,
 - Expenses with server side validation (group membership, payer, participants)
 - Three split types: equal, exact amount, and percentage
 - Group expense history, newest first, with payer and split users populated
+- Balance calculation per group, with debt simplification (fewest payments to settle everyone)
+- Settle up and a group activity feed
+- Dockerized, deployed on AWS with HTTPS, CI and one command rollback
 
 **Planned**
-- Balance calculation per group
-- Debt simplification (fewest payments to settle everyone)
-- Settle up and an activity feed
 - React web app and Flutter mobile app
 
 ## Architecture
@@ -68,7 +68,7 @@ Currency is fixed to USD for now.
 ## Getting started
 
 ### Prerequisites
-- Node.js 18 or newer
+- Node.js 24 (or Docker)
 - A MongoDB Atlas cluster (the free tier works)
 
 ### Setup
@@ -86,6 +86,7 @@ Fill in `.env`:
 PORT=5000
 MONGO_URI=your_mongodb_atlas_connection_string
 JWT_SECRET=your_secret
+CORS_ORIGINS=http://localhost:5173
 ```
 
 ### Run
@@ -97,6 +98,48 @@ npm test         # run the unit tests
 
 Check that it works: `GET http://localhost:5000/api/health` should return a 200.
 
+## Deployment
+
+The backend runs on a single AWS EC2 instance (Ubuntu) behind Nginx with HTTPS.
+
+```mermaid
+flowchart LR
+    GH["GitHub push to main"] --> CI["GitHub Actions: build and typecheck"]
+    CI --> IMG["Docker image on GHCR<br/>tagged with commit id"]
+    IMG --> SRV["EC2: docker compose"]
+    User["Client"] -->|HTTPS| NG["Nginx + Let's Encrypt"]
+    NG -->|127.0.0.1:3000| SRV
+    SRV --> DB[("MongoDB Atlas")]
+```
+
+**How it works**
+
+- **Image:** a multi stage Dockerfile (`node:24-slim`) builds the TypeScript, then ships only production dependencies and compiled output, running as the non root `node` user.
+- **CI:** on every push to `backend/**`, GitHub Actions installs, builds, and on `main` pushes the image to GitHub Container Registry, tagged with the 7 character commit id and `latest`.
+- **Server:** Docker Compose runs the container with a health check, a memory limit, log rotation and `restart: unless-stopped`. The port is bound to `127.0.0.1` only, so the container is reachable only through Nginx.
+- **Edge:** Nginx terminates TLS (Let's Encrypt via certbot), proxies `/api/` to the container, and drops requests for unknown hosts.
+- **Secrets:** `MONGO_URI` and `JWT_SECRET` live in `app.env` on the server (`chmod 600`), never in the repo or the image. The Atlas network allowlist contains only the server's Elastic IP.
+- **Shutdown and health:** the app handles SIGTERM gracefully. `GET /api/health` returns 503 when the database is down, which is what the health check and deploys rely on.
+
+**Deploying a version**
+
+```bash
+cd ~/splitwise
+./deploy.sh <image-tag>      # for example: ./deploy.sh 363af9c
+```
+
+The script pulls the new image first (a bad tag changes nothing), switches over, and waits for the health check. If the new version is not healthy within 120 seconds, it prints the logs and automatically rolls back to the previous tag.
+
+**Files in `deploy/`**
+
+| File | Purpose |
+|---|---|
+| `docker-compose.yml` | Production service definition |
+| `deploy.sh` | Pull, switch, wait for health, roll back on failure |
+| `nginx.conf` | Reverse proxy and HTTPS config used on the server |
+| `app.env.example` | Names of the secrets the server needs |
+
+Deploys are triggered manually for now. Automatic deploys from CI are a planned improvement.
 ## API overview
 
 All routes are under `/api`. Everything except register and login needs an `Authorization: Bearer <token>` header.
@@ -130,7 +173,7 @@ All routes are under `/api`. Everything except register and login needs an `Auth
 
 | Method | Route | Description |
 |---|---|---|
-| POST | `/expenses` | Create an expense (equal, exact, or percentage) |
+| POST | `/expense` | Create an expense (equal, exact, or percentage) |
 
 Example, equal split between two of three group members:
 
@@ -179,8 +222,10 @@ A Postman collection is saved in `/backend/postman`.
 │   │   ├── validations/    zod schemas
 │   │   ├── utils/          split calculator and helpers
 │   │   ├── app.ts          Express app setup
-│   │   └── server.ts       entry point
+│   │   └── index.ts        entry point
 │   └── postman/
+├── deploy/                 compose file, deploy script, nginx config
+├── .github/workflows/      CI: build and publish the image
 ├── web/                    planned
 └── mobile/                 planned
 ```
