@@ -20,6 +20,8 @@ RUN npm run build
 # Start again from a clean Node image, leaving stage 1 behind
 FROM node:24-slim
 
+   LABEL org.opencontainers.image.source="https://github.com/mqasim434/splitwise_clone"
+
 # Makes Express and other libraries run in their faster production mode
 ENV NODE_ENV=production
 
