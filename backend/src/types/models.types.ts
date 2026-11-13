@@ -1,7 +1,5 @@
 import type { Types } from "mongoose";
 
-export type SplitType = "equal" | "exact" | "percentage";
-
 export interface IUser {
     _id: Types.ObjectId;
     name: string;
@@ -25,20 +23,7 @@ export interface ISplit {
     amount: number;
 }
 
-export interface SplitResult {
-    user: string;
-    amount: number;
-}
-
-export interface PercentageSplitInput {
-  user: string;
-  percentage: number;
-}
-
-export interface ExactSplitInput {
-  user: string;
-  amount: number;
-}
+export type SplitType = "equal" | "exact" | "percentage";
 
 export interface IExpense {
     _id: Types.ObjectId;

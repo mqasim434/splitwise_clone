@@ -1,4 +1,4 @@
-import { ExactSplitInput, PercentageSplitInput, SplitResult } from "../../types/models.types"
+import { ExactSplitInput, PercentageSplitInput, SplitResult } from "../../types/expenses.types"
 
 const toCents = (value: number): number => Math.round(value * 100);
 
@@ -105,7 +105,7 @@ export const calculateExactSplits = (
   });
 
   const sumCents = result.reduce((total, s) => total + toCents(s.amount), 0);
-  
+
   if (sumCents !== totalCents) {
     throw new Error("Split amounts must add up to the total amount");
   }

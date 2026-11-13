@@ -1,0 +1,14 @@
+# your PC's copies, the build installs fresh ones inside
+node_modules
+dist
+
+# secrets must never go inside an image
+.env
+.env.*
+
+# not needed at runtime
+.git
+postman
+npm-debug.log
+Dockerfile
+.dockerignore

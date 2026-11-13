@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { addExpenceController } from "../controllers/expence.controller";
+import { addExpenseController } from "../controllers/expense.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-router.post("/",authMiddleware,addExpenceController);
+router.post("/",authMiddleware,addExpenseController);
 
 export default router;

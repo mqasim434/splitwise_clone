@@ -47,4 +47,4 @@ const expenseSchema = new Schema<IExpense>(
     { timestamps: true }
 );
 
-export const Expence = model<IExpense> ("Expense", expenseSchema);
+export const Expense = model<IExpense> ("Expense", expenseSchema);
