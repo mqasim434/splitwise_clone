@@ -78,7 +78,7 @@ export const getUserGroupsController = async (req: AuthRequest, res: Response) =
 
         const groups = await Group.find({ members: req.user.id })
             .populate("members", "name email")
-            .populate("createdBy", "name email");
+            .populate("createdBy", "name email")
             .sort({ createdAt: -1 })
 
         res.status(200).json({
