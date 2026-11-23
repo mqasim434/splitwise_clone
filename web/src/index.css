@@ -1,1 +1,20 @@
 @import "tailwindcss";
+
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+*{
+    box-sizing: border-box;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #f8f9fd inset;
+  -webkit-text-fill-color: #0f172a;
+  caret-color: #0f172a;
+}
