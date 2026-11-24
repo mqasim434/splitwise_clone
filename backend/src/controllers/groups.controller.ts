@@ -36,37 +36,47 @@ export const createGroupController = async (req: AuthRequest, res: Response) => 
 
 export const addMembersToGroupController = async (req: AuthRequest, res: Response) => {
     try {
-        const { members } = req.body;
-        const { id: groupId } = req.params;
-
         if (!req.user || typeof req.user === "string") {
-            return res.status(401).json({ message: "Unauthorized" });
+            return res.status(401).json({ message: "Unauthorized" })
         }
 
-        const group = await Group.findById(groupId);
+        const { emails } = req.body as { emails: string[] }
+        const { id: groupId } = req.params
 
-        if (group) {
-
-            if (group.createdBy.toString() !== req.user.userId) {
-                return res.status(403).json({ message: "Only the group creator can add members" });
-            }
-
-            const existingMemberIds = group.members.map((m) => m.toString());
-            const newUserIds = members.filter((id: string) => !existingMemberIds.includes(id));
-            group.members = [...group.members, ...newUserIds];
-            await group.save();
-            res.status(200).json({ "message": "Members added to group succesfully", group });
-
-        } else {
-            res.status(404).json({ "message": "Group Not found" });
+        const group = await Group.findById(groupId)
+        if (!group) {
+            return res.status(404).json({ message: "Group not found" })
         }
 
+        if (group.createdBy.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Only the group creator can add members" })
+        }
+
+        // Look up the users by email
+        const normalized = emails.map((e) => e.trim().toLowerCase())
+        const users = await User.find({ email: { $in: normalized } }).select("_id email")
+
+        const foundEmails = new Set(users.map((u) => u.email.toLowerCase()))
+        const notFound = normalized.filter((e) => !foundEmails.has(e))
+        if (notFound.length > 0) {
+            return res.status(404).json({ message: `No account found for: ${notFound.join(", ")}` })
+        }
+
+        // Add only the users who aren't members yet
+        const existing = new Set(group.members.map((m) => m.toString()))
+        const newIds = users.map((u) => u._id).filter((uid) => !existing.has(uid.toString()))
+
+        group.members.push(...newIds)
+        await group.save()
+        await group.populate([
+            { path: "members", select: "name email" },
+            { path: "createdBy", select: "name email" },
+        ])
+
+        res.status(200).json({ message: "Members added to group successfully", group })
     } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown Error";
-        res.status(500).json({
-            "message": "Unable to add member(s)",
-            "error": message
-        });
+        console.error(error)
+        res.status(500).json({ message: "Unable to add members" })
     }
 }
 

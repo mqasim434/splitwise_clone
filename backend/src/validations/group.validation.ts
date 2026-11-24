@@ -5,5 +5,5 @@ export const createGroupSchema = z.object({
 });
 
 export const addMembersSchema = z.object({
-  email: z.string().email(),
-});
+  emails: z.array(z.email()).min(1).max(20),
+})
