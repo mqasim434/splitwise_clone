@@ -75,7 +75,9 @@ export const authSlice = createSlice({
     builder
       .addCase(fetchMe.fulfilled, (s, a) => { s.user = a.payload; s.initialized = true })
       .addCase(fetchMe.rejected, (s) => {
-        s.user = null; s.token = null; s.initialized = true
+        s.user = null; 
+        s.token = null; 
+        s.initialized = true
         localStorage.removeItem("token")   // saved token was invalid or expired
       });
   }
